@@ -1,7 +1,7 @@
 # pyQQRobot
 基于Python3与WebQQ的QQ机器人框架。
 
-A QQ Robot framwork based on WebQQ and Python3.
+A QQ Robot framework based on WebQQ and Python3.
 
 ## Disclaimer
 As a Senior Two student(about to one in Senior Three) in China there just cannot be enough time for me to maintain the project often. I sincerely hope that there'll be coders interested to help.
