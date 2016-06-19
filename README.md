@@ -20,9 +20,9 @@ class myHandler(qqHandler):
 if __name__=='__main__':
 	qc=qqClient()
 	qc.QRVeri()
-	qc.Login()
+	qc.login()
 	qc.addHandler(myHandler())
-	qc.Listen(join=True)
+	qc.listen(join=True)
 ```
 
 You can refer to src/example.py for another example, using some sort of intelligent robot to respond to messages.

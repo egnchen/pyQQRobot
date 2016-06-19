@@ -9,7 +9,7 @@ class qqTulingHandler(qqHandler):
         if APIKey==None:
             print('You\'ll have to provide an APIKey first.')
             print('Get it @ http://tuling123.com')
-            raise RuntimeException('APIKey not available')
+            raise ValueError('APIKey not available')
         else:
             self.APIKey=APIKey
 
@@ -28,7 +28,7 @@ if __name__=="__main__":
     h=qqTulingHandler(input('API Key:'))
     a.QRVeri()
     # a.loadVeri('./ekTester.veri')
-    a.Login()
+    a.login()
 
     a.addHandler(h)
-    a.Listen(join=True)
+    a.listen(join=True)

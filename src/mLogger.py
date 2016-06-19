@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import time
 
 def output(*s,sep=' ',end='\n',file=None,flush=False):

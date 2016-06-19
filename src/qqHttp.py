@@ -6,15 +6,16 @@ from urllib import request,parse
 from http.cookiejar import Cookie,MozillaCookieJar
 
 class mHTTPClient(object):
+
     strNotImplemented='Method not implemented. Try another mHTTPClient class.'
 
     def req(self,url,*,data=None,headers={}):
         raise NotImplementedError(strNotImplemented)
 
-    def reqAsync(self,url,*,data=None,headers={},cb=lambda x:x):
+    def reqAsync(self,url,*,data=None,headers={},cb=lambda x,y:x):
         cb(self.req(url,data=data,headers=headers),
             {'url':url,'data':data,'headers':headers})
-
+        
     # ----------syntactic sugars------------
 
     def getJson(self,url,*,data=None,headers={}):
@@ -27,6 +28,15 @@ class mHTTPClient(object):
         with open(filename,'wb') as f:
             f.write(self.req(url,data=data,headers=headers))
         return filename
+
+    def getTextAsync(self,url,*,data=None,headers={},cb=lambda x,y:x):
+        cbText=lambda x,y:cb(x.decode('utf-8').strip(),y)
+        self.reqAsync(url,data=data,headers=headers,cb=cbText)
+
+    def getJsonAsync(self,url,*,data=None,headers={},cb=lambda x,y:x):
+        cbJson=lambda x,y:cb(json.loads(x.decode('utf-8')),y)
+        self.reqAsync(url,data=data,headers=headers,cb=cbJson)
+
 
     # --------end syntactic sugars---------
 
@@ -64,7 +74,7 @@ class mHTTPClient_urllib(mHTTPClient):
 
     def getCookie(self,name,domain,path='/'):
         try:
-            self.cj._cookie[domain][path][name].value
+            return self.cj._cookies[domain][path][name].value
         except Exception as e:
             raise RuntimeError('Cookie not found:%s @ %s%s' % 
                 (name,domain,path))
