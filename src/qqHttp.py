@@ -1,6 +1,4 @@
-import threading
 import json
-from queue import Queue
 from multiprocessing.dummy import Pool
 from urllib import request,parse
 from http.cookiejar import Cookie,MozillaCookieJar
@@ -10,7 +8,7 @@ class mHTTPClient(object):
     strNotImplemented='Method not implemented. Try another mHTTPClient class.'
 
     def req(self,url,*,data=None,headers={}):
-        raise NotImplementedError(strNotImplemented)
+        raise NotImplementedError(self.strNotImplemented)
 
     def reqAsync(self,url,*,data=None,headers={},cb=lambda x,y:x):
         cb(self.req(url,data=data,headers=headers),
@@ -37,17 +35,16 @@ class mHTTPClient(object):
         cbJson=lambda x,y:cb(json.loads(x.decode('utf-8')),y)
         self.reqAsync(url,data=data,headers=headers,cb=cbJson)
 
-
     # --------end syntactic sugars---------
 
     def setCookie(self,name,value,domain,expires=None):
-        raise NotImplementedError(strNotImplemented)
+        raise NotImplementedError(self.strNotImplemented)
 
     def getCookie(self,name,domain):
-        raise NotImplementedError(strNotImplemented)
+        raise NotImplementedError(self.strNotImplemented)
 
     def clearCookie(self):
-        raise NotImplementedError(strNotImplemented)
+        raise NotImplementedError(self.strNotImplemented)
 
 
 class mHTTPClient_urllib(mHTTPClient):
@@ -75,7 +72,7 @@ class mHTTPClient_urllib(mHTTPClient):
     def getCookie(self,name,domain,path='/'):
         try:
             return self.cj._cookies[domain][path][name].value
-        except Exception as e:
+        except Exception:
             raise RuntimeError('Cookie not found:%s @ %s%s' % 
                 (name,domain,path))
 

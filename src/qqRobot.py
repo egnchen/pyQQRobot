@@ -11,13 +11,13 @@ import mLogger as log
 utime=lambda:int(time.time())
 
 # WARN: the following command set default `print` to
-#       mLogger output command. Use this at your own risk.
+#       mLogger output command.
 #       It's suggested to use log.v(TAG,'message....')
 #       instead of using `print` directly.
 # print=log.output
 
 class qqClient():
-    defaultHeaders=dict(referer='http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1',
+    defaultHeaders=dict(Referer='http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1',
         User_Agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML,like Gecko) Chrome/50.0.2661.86 Safari/537.36')
     pollHeaders=dict(Host='d1.web2.qq.com',
         Origin='http://d1.web2.qq.com',
@@ -66,11 +66,9 @@ class qqClient():
         response=json.loads(response.decode('utf-8'))
         log.v(TAG,'Got feedback.')
         if response.get('errCode',0) != 0 or response.get('retcode',0) != 0:
-            # something is wrong
+            # retcode==1202 is an error which is not. It should be ignored.
             if response.get('retcode',0) == 1202:
-                log.e(TAG,'Message sending failed.')
-                self.HC.reqAsync(previous['url'],data=previous['data'],
-                    headers=previous['headers'],cb=self._callback_send)
+                log.i(TAG,'Retcode 1202.')
 
 
     def _parseArg(self,jsStr):
@@ -186,9 +184,12 @@ class qqClient():
         self.getUserFriends()
         self.getGroupList()
         self.getDiscusList()
+        self.getOnlineBuddies()
+        self.getRecentList()
 
     def getUserFriends(self):
-        self.fl.parseFriends(self.HC.getText('http://s.web2.qq.com/api/get_user_friends2',
+        self.fl.parseFriends(self.HC.getJson(
+            'http://s.web2.qq.com/api/get_user_friends2',
             data={'r':json.dumps({
                 'hash':self.getQHash(),
                 'vfwebqq':self.vfwebqq})},
@@ -196,22 +197,41 @@ class qqClient():
         log.i('list','Finished getting friend list.')
 
     def getGroupList(self):
-        self.fl.parseGroups(self.HC.getText('http://s.web2.qq.com/api/get_group_name_list_mask2',
+        self.fl.parseGroups(self.HC.getJson(
+            'http://s.web2.qq.com/api/get_group_name_list_mask2',
             data={'r':json.dumps({
                 'hash':self.getQHash(),
                 'vfwebqq':self.vfwebqq})},
             headers=self.defaultHeaders))
-        log.i('list','Finished getting group list.')
+        log.i('list','Group list fetched.')
 
     def getDiscusList(self):
-        self.fl.parseDiscus(self.HC.getText(
+        self.fl.parseDiscus(self.HC.getJson(
             'http://s.web2.qq.com/api/get_discus_list',
             data={'clientid':53999199,
                 'psessionid':self.psessionid,
                 'vfwebqq':self.vfwebqq,
                 't':utime()},
             headers=self.defaultHeaders))
-        log.i('list','Finished getting discus group list.')
+        log.i('list','Discus group list fetched.')
+
+    def getOnlineBuddies(self):
+        # method is GET
+        urlgetOB=('http://d1.web2.qq.com/channel/get_online_buddies2?'
+            'vfwebqq={}&clientid={}&psessionid={}&t={}').format(
+            self.vfwebqq,53999199,self.psessionid,utime())
+        self.HC.getJson(urlgetOB,headers=self.pollHeaders)
+        log.i('list','Online buddies list fetched.')
+
+    def getRecentList(self):
+        self.fl.parseRecent(self.HC.getJson(
+            'http://d1.web2.qq.com/channel/get_recent_list2',
+            data={'r':json.dumps({
+                'vfwebqq':self.vfwebqq,
+                'clientid':53999199,
+                'psessionid':self.psessionid})},
+            headers=self.pollHeaders))
+        log.i('list','Recent list fetched.')
 
     def listen(self,join=False):
         urlPoll2='http://d1.web2.qq.com/channel/poll2'

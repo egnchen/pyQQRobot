@@ -40,7 +40,7 @@ Here's a brief list of the files included:
 Commonly **qqRobot** is what you all need.
 
 ## Known bugs & Possible improvements
-1. `retcode 103` when sending `poll2` requests. A login @ `w.qq.com` from the internet browser is required to fix the problem, which make it not doable to run pyQQRobot in CLI-only environments.
+1. ~~`retcode 103` when sending `poll2` requests.~~ Problem solved.
 2. Possible unhandled `404` errors can lead to crash.
 3. More APIs.
 4. Using `gevents` instead of `urllib` with `multiprocessing.dummy`.

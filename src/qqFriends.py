@@ -1,18 +1,13 @@
-#!/usr/bin/env python3
-import json
-
 class qqFriends():
 	def __init__(self):
-		self.f=dict()
-		self.g=dict()
-		self.d=dict()
+		self.f=dict() # friends list
+		self.g=dict() # group list
+		self.d=dict() # discus group list
+		self.r=dict() # recent list
 		self.c=[]
 
 	def parseFriends(self,j):
-		if type(j) == str:
-			j=json.loads(j)
 		j=j['result']
-
 		# category, uin & flag
 		for e in j['friends']:
 			self.f[e['uin']]=dict()
@@ -37,30 +32,18 @@ class qqFriends():
 		# categories
 		for e in j['categories']:
 			self.c.append(e['name'])
-
-		# print(json.dumps(self.f,indent=2))
-		# print(self.c)
 	
 	def parseGroups(self,j):
-		if type(j) == str:
-			j=json.loads(j)
 		j=j['result']
-
-		for e in j['gnamelist']:
-			self.g[e['gid']]=dict()
-			self.g[e['gid']]['flag']=e['flag']
-			self.g[e['gid']]['name']=e['name']
-			self.g[e['gid']]['code']=e['code']
-
-		# print(self.g)
+		self.g={e['gid']:e for e in j['gnamelist']}
+		for e in self.g.values():
+			del(e['gid'])
 
 	def parseDiscus(self,j):
-		if type(j) == str:
-			j=json.loads(j)
 		j=j['result']
+		self.d={e['did']:e for e in j['dnamelist']}
+		for e in self.d.values():
+			del(e['did'])
 
-		for e in j['dnamelist']:
-			self.d[e['did']]=dict()
-			self.d[e['did']]['name']=e['name']
-
-		# print(self.d)
+	def parseRecent(self,j):
+		self.r=j['result']
