@@ -7,6 +7,12 @@ A QQ Robot framework based on WebQQ and Python3.
 As a Senior Two student(about to one in Senior Three) in China there just cannot be enough time for me to maintain the project often. I sincerely hope that there'll be coders interested to help.
 
 ## How to use?
+
+### PEP8 Ready!
+The newest version contains **some huge changes to names of classes and functions. Please pay attention.**
+
+For more information on PEP8 standards, [click here](https://www.douban.com/note/134971609/).
+
 Here is a simple example.
 
 ```python
@@ -27,7 +33,31 @@ if __name__ == '__main__':
     qc.listen(join=True)
 ```
 
+in comparison to older version:
+
+```python
+#!/usr/bin/env python3
+
+from qqRobot import qqClient,qqHandler
+
+class myHandler(qqHandler):
+   def onBuddyMessage(self,uin,msg):
+       self.sendMessage(uin,"Hello, my name is pyQQRobot!")
+
+if __name__=='__main__':
+   qc=qqClient()
+   qc.QRVeri()
+   qc.login()
+   qc.addHandler(myHandler())
+   qc.listen(join=True)
+```
+
 You can refer to src/example.py for another example, using some sort of intelligent robot to respond to messages.
+
+## Functions
+Up till now you can receive & send messages to your buddies and in groups.
+
+Discus groups & more functions will be supported in the future.
 
 ## Structure
 Here's a brief list of the files included:
