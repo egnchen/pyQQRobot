@@ -4,301 +4,342 @@ import json
 import threading
 import traceback
 
-from qqFriends import qqFriends
-from qqHttp import mHTTPClient_urllib
-import mLogger as log
+from qqfriends import QQFriends
+from qqhttp import mHTTPClient_urllib
+import mlogger as log
 
-utime=lambda:int(time.time())
+
+def utime():
+    return int(time.time())
 
 # WARN: the following command set default `print` to
 #       mLogger output command.
-#       It's suggested to use log.v(TAG,'message....')
+#       It's suggested to use log.v(TAG, 'message....')
 #       instead of using `print` directly.
-# print=log.output
+# print = log.output
 
-class qqClient():
-    defaultHeaders=dict(Referer='http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1',
-        User_Agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML,like Gecko) Chrome/50.0.2661.86 Safari/537.36')
-    pollHeaders=dict(Host='d1.web2.qq.com',
+
+class QQClient():
+    default_headers = dict(
+        Referer='http://s.web2.qq.com/proxy.html',
+        User_Agent=(
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/'
+            '537.36 (KHTML, like Gecko) Chrome/50.0.2661.86 Safari/537.36'))
+    poll_headers = dict(
         Origin='http://d1.web2.qq.com',
-        Referer='http://d1.web2.qq.com/proxy.html?v=20151105001&callback=1&id=2',
-        User_Agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML,like Gecko) Chrome/50.0.2661.86 Safari/537.36')
+        Referer='http://d1.web2.qq.com/proxy.html',
+        User_Agent=(
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/'
+            '537.36 (KHTML, like Gecko) Chrome/50.0.2661.86 Safari/537.36'))
 
-    def __init__(self,HTTPClient=mHTTPClient_urllib,handlers=[]):
-        self.fl=qqFriends()
-        self.HC=HTTPClient()
-        self.msgid=50500001
-        self.handlers=handlers
+    def __init__(self, HTTPClient=mHTTPClient_urllib, handlers=[]):
+        self.friend_list = QQFriends()
+        self.http_client = HTTPClient()
+        self.msg_id = 50500000
+        self.handlers = handlers
 
-    def _callback_receive(self,response,previous):
-        TAG='Listener'
+    def _callback_receive(self, resp, previous):
+        tag = 'Listener'
         try:
-            response=json.loads(response.decode('utf-8'))
-            if response.get('retcode',0)!=0 or response.get('result')==None:
+            resp = json.loads(resp.decode('utf-8'))
+            if resp.get('retcode', 0) != 0 or resp.get('result') is None:
                 # something is wrong
-                log.e(TAG,'error retcode %d errmsg %s' % 
-                    (response.get('retcode',0),response.get('errmsg','none')))
-                if response.get('retcode',0)==103:
-                    log.w(TAG,'Meet with error 103.')
-                    log.w(TAG,'Please login @ w.qq.com in a web browser first.')
+                log.e(tag, 'error retcode %d errmsg %s' % (
+                    resp.get('retcode', 0), resp.get('errmsg', 'none')))
+                if resp.get('retcode', 0) == 103:
+                    log.w(tag, 'Meet with error 103.')
+                    log.w(tag, 'Please login @ w.qq.com manually first.')
                     exit()
             else:
-                uin=response['result'][0]['value']['from_uin']
-                msg=response['result'][0]['value']['content'][1]
-                if response['result'][0]['poll_type'] == 'message':
-                    log.v(TAG,'got message from friend '+str(uin))
+                uin = resp['result'][0]['value']['from_uin']
+                msg = resp['result'][0]['value']['content'][1]
+                if resp['result'][0]['poll_type'] == 'message':
+                    log.v(tag, 'got message from friend ' + str(uin))
                     for h in self.handlers:
-                        h.onBuddyMessage(uin,msg)
-                if response['result'][0]['poll_type']=='group_message':
-                    log.v(TAG,'got message from group '+str(uin))
+                        h.on_buddy_message(uin, msg)
+                if resp['result'][0]['poll_type'] == 'group_message':
+                    log.v(tag, 'got message from group ' + str(uin))
                     for h in self.handlers:
-                        h.onGroupMessage(uin,msg)
+                        h.on_group_message(uin, msg)
         except Exception:
-            log.e(TAG,'Fatal error parsing messages.')
-            log.e(TAG,response)
+            log.e(tag, 'Fatal error parsing messages.')
+            log.e(tag, resp)
             traceback.print_exc()
 
-    def _callback_send(self,response,previous):
-        TAG='Sender'
-        response=json.loads(response.decode('utf-8'))
-        log.v(TAG,'Got feedback.')
-        if response.get('errCode',0) != 0 or response.get('retcode',0) != 0:
-            # retcode==1202 is an error which is not. It should be ignored.
-            if response.get('retcode',0) == 1202:
-                log.i(TAG,'Retcode 1202.')
+    def _callback_send(self, resp, previous):
+        tag = 'Sender'
+        resp = json.loads(resp.decode('utf-8'))
+        log.v(tag, 'Got feedback.')
+        if resp.get('errCode', 0) != 0 or resp.get('retcode', 0) != 0:
+            # retcode1202 is an error which is not and should be ignored.
+            if resp.get('retcode', 0) == 1202:
+                log.i(tag, 'retcode 1202.')
 
+    def _parse_arg(self, js_str):
+        js_str = js_str[js_str.index('(') + 1: len(js_str) - 2]
+        return list(map(lambda x: x.strip().strip("'"), js_str.split(',')))
 
-    def _parseArg(self,jsStr):
-        jsStr=jsStr[jsStr.index('(')+1:len(jsStr)-2]
-        return list(map(lambda x:x.strip().strip("'"),jsStr.split(',')))
-
-    def getQHash(self):
+    def get_qq_hash(self):
         # rewrite from an javascript function
         # see mq_private.js for original version
-        if not hasattr(self,'_qhash'):
-            x=int(self.uin)
-            I=self.ptwebqq
-            N=[0,0,0,0]
-            i=0
-            while i<len(I):
+        if not hasattr(self, '_qhash'):
+            x = int(self.uin)
+            I = self.ptwebqq
+            N = [0, 0, 0, 0]
+            i = 0
+            while i < len(I):
                 N[i % 4] ^= ord(I[i])
-                i+=1
+                i += 1
             V = []
             V.append(x >> 24 & 255 ^ ord('E'))
             V.append(x >> 16 & 255 ^ ord('C'))
             V.append(x >> 8 & 255 ^ ord('O'))
             V.append(x & 255 ^ ord('K'))
-            U = [];
+            U = []
             for T in range(8):
-                if T%2==0:
-                    U.append(N[T>>1])
+                if T % 2 == 0:
+                    U.append(N[T >> 1])
                 else:
-                    U.append(V[T>>1])
-            N = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
+                    U.append(V[T >> 1])
+            N = ["0", "1", "2", "3", "4", "5", "6", "7",
+                 "8", "9", "A", "B", "C", "D", "E", "F"]
             V = ""
             for T in range(len(U)):
                 V += N[U[T] >> 4 & 15]
                 V += N[U[T] & 15]
-            self._qhash=V
+            self._qhash = V
         return self._qhash
 
-    # def saveVeri(self,filename=None):
-    #     if filename==None:
-    #         filename=self.uin+'.veri'
-        
+    # def saveVeri(self, filename = None):
+    #     if filename =  = None:
+    #         filename = self.uin+'.veri'
 
-    # def loadVeri(self,filename):
-    #     self.HC.loadCookie(filename)
+    # def loadVeri(self, filename):
+    #     self.http_client.loadCookie(filename)
 
-    def QRVeri(self,showQR=None):
-        TAG='Verify'
+    def QR_veri(self, show_QR=None):
+        tag = 'Verify'
         # --------------necessary urls--------------
-        urlgetQRImage = "https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=0&l=M&s=5&d=72&v=4&t=0.5"
-        urlcheckQRState = "https://ssl.ptlogin2.qq.com/ptqrlogin?webqq_type=10&remember_uin=1&login2qq=1&aid=501004106&u1=http%3A%2F%2Fw.qq.com%2Fproxy.html%3Flogin2qq%3D1%26webqq_type%3D10&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&action=0-0-{timer}&mibao_css=m_webqq&t=undefined&g=1&js_type=0&js_ver=10139&login_sig=&pt_randsalt=0"
+        url_get_QR_image = "https://ssl.ptlogin2.qq.com/ptqrshow?" \
+                           "appid=501004106&e=0&l=M&s=5&d=72&v=4&t=0.5"
+        url_check_QR_state = (
+            "https://ssl.ptlogin2.qq.com/ptqrlogin?webqq_type=10&"
+            "remember_uin=1&login2qq=1&aid=501004106&u1="
+            "http%3A%2F%2Fw.qq.com%2Fproxy.html%3Flogin2qq%3D1%26webqq_type"
+            "%3D10&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&"
+            "dumy=&fp=loginerroralert&action=0-0-{timer}&mibao_css=m_webqq&"
+            "t=undefined&g=1&js_type=0&js_ver=10139&login_sig=&pt_randsalt=0"
+        )
         # ------------end necessary urls------------
 
         # get QR image
-        if showQR == None:
+        if show_QR is None:
             # Mac OSX
-            showQR = lambda :os.system('open '+self.HC.getImage(urlgetQRImage))
-        showQR()
+            def s():
+                os.system('open ' +
+                          self.http_client.get_image(url_get_QR_image))
+            show_QR = s
+        show_QR()
 
         # check QR verification state
-        t=int(time.clock()*10000)+10000 # default clock
-        prev=-1
+        t = int(time.clock() * 10000) + 10000  # default clock
+        prev = -1
         while True:
             time.sleep(1)
-            t+=int(time.clock()*10000)
-            res=self._parseArg(self.HC.getText(urlcheckQRState.format(timer=t)))
-            if prev!=res[0]:
+            t += int(time.clock() * 10000)
+            res = self._parse_arg(
+                self.http_client.get_text(url_check_QR_state.format(timer=t)))
+            if prev != res[0]:
                 if res[0] == '65':
-                    log.i(TAG,'QR code expired.')
-                    showQR()
+                    log.i(tag, 'QR code expired.')
+                    show_QR()
                 elif res[0] == '66':
-                    log.i(TAG,'Please scan the QRCode image shown on your screen.')
+                    log.i(tag, 'Please scan the QRCode shown on your screen.')
                 elif res[0] == '67':
-                    log.i(TAG,'Please press confirm on your phone.')
+                    log.i(tag, 'Please press confirm on your phone.')
                 elif res[0] == '0':
                     # QR code verification completed
-                    log.i(TAG,res[-2])
-                    self.username=res[-1]
-                    log.i(TAG,'User name: '+self.username)
+                    log.i(tag, res[-2])
+                    self.username = res[-1]
+                    log.i(tag, 'User name: ' + self.username)
                     break
-                prev=res[0]
+                prev = res[0]
 
         # first step login
-        self.HC.req(res[2])
+        self.http_client.req(res[2])
 
         # cookie proxy
-        self.HC.setCookie('p_skey',self.HC.getCookie('p_skey','.web2.qq.com'),'w.qq.com')
-        self.HC.setCookie('p_uin',self.HC.getCookie('p_uin','.web2.qq.com'),'w.qq.com')
-        self.ptwebqq=self.HC.getCookie('ptwebqq','.qq.com')
+        self.http_client.set_cookie(
+            'p_skey',
+            self.http_client.get_cookie('p_skey', '.web2.qq.com'),
+            'w.qq.com')
+        self.http_client.set_cookie(
+            'p_uin',
+            self.http_client.get_cookie('p_uin', '.web2.qq.com'),
+            'w.qq.com')
+        self.ptwebqq = self.http_client.get_cookie('ptwebqq', '.qq.com')
 
-        log.i(TAG,'Saving verification...')
+        # log.i(tag, 'Saving verification...')
         # save verification now
         # self.saveVeri('./'+username+'.veri')
 
     def login(self):
         # --------necessary urls & data--------
-        urlgetVFWebQQ="http://s.web2.qq.com/api/getvfwebqq?ptwebqq={ptwebqq}&psessionid=&t=1456633306528"
-        urlLogin2="http://d1.web2.qq.com/channel/login2"
-        postLogin2={'clientid':53999199,'pssessionid':'','status':'online'}
+        url_get_vfwebqq = "http://s.web2.qq.com/api/getvfwebqq?" \
+                          "ptwebqq={ptwebqq}&psessionid=&t=1456633306528"
+        url_login2 = "http://d1.web2.qq.com/channel/login2"
+        post_login2 = {'clientid': 53999199,
+                       'pssessionid': '', 'status': 'online'}
         # ------end necessary urls & data------
 
         # get vfwebqq
-        self.vfwebqq=self.HC.getJson(urlgetVFWebQQ.format(ptwebqq=self.ptwebqq),
-            headers=dict(referer='http://s.web2.qq.com/proxy.html'))['result']['vfwebqq']
+        self.vfwebqq = self.http_client.get_json(
+            url_get_vfwebqq.format(ptwebqq=self.ptwebqq),
+            headers=self.default_headers)['result']['vfwebqq']
 
         # second step login
-        postLogin2['ptwebqq']=self.ptwebqq
-        j2=self.HC.getJson(urlLogin2,data={'r':json.dumps(postLogin2)})
+        post_login2['ptwebqq'] = self.ptwebqq
+        j2 = self.http_client.get_json(url_login2,
+                                       data={'r': json.dumps(post_login2)})
 
-        self.uin=j2['result']['uin']
-        self.psessionid=j2['result']['psessionid']
-        self.status=j2['result']['status']
-        self.getQHash()
-        self.getUserFriends()
-        self.getGroupList()
-        self.getDiscusList()
-        self.getOnlineBuddies()
-        self.getRecentList()
+        self.uin = j2['result']['uin']
+        self.psessionid = j2['result']['psessionid']
+        self.status = j2['result']['status']
+        self.get_qq_hash()
+        self.get_user_friends()
+        self.get_group_list()
+        self.get_discus_list()
+        self.get_online_buddies()
+        self.get_recent_list()
 
-    def getUserFriends(self):
-        self.fl.parseFriends(self.HC.getJson(
+    def get_user_friends(self):
+        self.friend_list.parse_friends(self.http_client.get_json(
             'http://s.web2.qq.com/api/get_user_friends2',
-            data={'r':json.dumps({
-                'hash':self.getQHash(),
-                'vfwebqq':self.vfwebqq})},
-            headers=self.defaultHeaders))
-        log.i('list','Finished getting friend list.')
+            data={'r': json.dumps({
+                  'hash': self.get_qq_hash(),
+                  'vfwebqq': self.vfwebqq})},
+            headers=self.default_headers))
+        log.i('list', 'Finished getting friend list.')
 
-    def getGroupList(self):
-        self.fl.parseGroups(self.HC.getJson(
+    def get_group_list(self):
+        self.friend_list.parse_groups(self.http_client.get_json(
             'http://s.web2.qq.com/api/get_group_name_list_mask2',
-            data={'r':json.dumps({
-                'hash':self.getQHash(),
-                'vfwebqq':self.vfwebqq})},
-            headers=self.defaultHeaders))
-        log.i('list','Group list fetched.')
+            data={'r': json.dumps({
+                  'hash': self.get_qq_hash(),
+                  'vfwebqq': self.vfwebqq})},
+            headers=self.default_headers))
+        log.i('list', 'Group list fetched.')
 
-    def getDiscusList(self):
-        self.fl.parseDiscus(self.HC.getJson(
+    def get_discus_list(self):
+        self.friend_list.parse_discus(self.http_client.get_json(
             'http://s.web2.qq.com/api/get_discus_list',
-            data={'clientid':53999199,
-                'psessionid':self.psessionid,
-                'vfwebqq':self.vfwebqq,
-                't':utime()},
-            headers=self.defaultHeaders))
-        log.i('list','Discus group list fetched.')
+            data={'clientid': 53999199,
+                  'psessionid': self.psessionid,
+                  'vfwebqq': self.vfwebqq,
+                  't': utime()},
+            headers=self.default_headers))
+        log.i('list', 'Discus group list fetched.')
 
-    def getOnlineBuddies(self):
+    def get_online_buddies(self):
         # method is GET
-        urlgetOB=('http://d1.web2.qq.com/channel/get_online_buddies2?'
+        url_get_online = (
+            'http://d1.web2.qq.com/channel/get_online_buddies2?'
             'vfwebqq={}&clientid={}&psessionid={}&t={}').format(
-            self.vfwebqq,53999199,self.psessionid,utime())
-        self.HC.getJson(urlgetOB,headers=self.pollHeaders)
-        log.i('list','Online buddies list fetched.')
+            self.vfwebqq, 53999199, self.psessionid, utime())
+        self.http_client.get_json(url_get_online, headers=self.poll_headers)
+        log.i('list', 'Online buddies list fetched.')
 
-    def getRecentList(self):
-        self.fl.parseRecent(self.HC.getJson(
+    def get_recent_list(self):
+        self.friend_list.parse_recent(self.http_client.get_json(
             'http://d1.web2.qq.com/channel/get_recent_list2',
-            data={'r':json.dumps({
-                'vfwebqq':self.vfwebqq,
-                'clientid':53999199,
-                'psessionid':self.psessionid})},
-            headers=self.pollHeaders))
-        log.i('list','Recent list fetched.')
+            data={'r': json.dumps({
+                  'vfwebqq': self.vfwebqq,
+                  'clientid': 53999199,
+                  'psessionid': self.psessionid})},
+            headers=self.poll_headers))
+        log.i('list', 'Recent list fetched.')
 
-    def listen(self,join=False):
-        urlPoll2='http://d1.web2.qq.com/channel/poll2'
-        d={'r':json.dumps({"ptwebqq":self.ptwebqq,"clientid":53999199,
-            "psessionid":self.psessionid,"key":""})}
+    def listen(self, join=False):
+        url_poll2 = 'http://d1.web2.qq.com/channel/poll2'
+        d = {'r': json.dumps({
+            "ptwebqq": self.ptwebqq, "clientid": 53999199,
+            "psessionid": self.psessionid, "key": ""})}
+
         def l():
             while True:
-                r=self.HC.req(urlPoll2,data=d,headers=self.pollHeaders)
-                self._callback_receive(r,{'url':urlPoll2,'data':d,'headers':self.pollHeaders})
-        t=threading.Thread(name='qqClientListener',target=l)
+                r = self.http_client.req(
+                    url_poll2, data=d, headers=self.poll_headers)
+                self._callback_receive(
+                    r, {'url': url_poll2,
+                        'data': d, 'headers': self.poll_headers})
+
+        t = threading.Thread(name='qq_client_listener', target=l)
         t.start()
         if join:
             t.join()
 
-    def sendBuddyMessage(self,uin,content,font="宋体",size=10,color='000000'):
-        self.msgid+=1
-        c=json.dumps([content,["font",{ "name": font,"size": size,
-                    "style": [0,0,0],"color": color }]])
-        self.HC.reqAsync(
+    def send_buddy_message(self, uin, content,
+                           font="宋体", size=10, color='000000'):
+        self.msg_id += 1
+        c = json.dumps([
+            content, ["font",
+                      {"name": font, "size": size,
+                       "style": [0, 0, 0], "color": color}]])
+        self.http_client.req_async(
             'http://d1.web2.qq.com/channel/send_buddy_msg2',
-            data={'r':json.dumps({
-                'to':uin,'content':c,
-                'face':self.fl.f[uin]['face'],
-                'clientid':53999199,'msg_id':self.msgid,
-                'psessionid':self.psessionid})},
-            headers=self.pollHeaders,
+            data={'r': json.dumps({
+                'to': uin, 'content': c,
+                'face': self.friend_list.f[uin]['face'],
+                'clientid': 53999199, 'msg_id': self.msg_id,
+                'psessionid': self.psessionid})},
+            headers=self.poll_headers,
             cb=self._callback_send)
 
-    def sendGroupMessage(self,gid,content,font="宋体",size=10,color='000000'):
-        self.msgid+=1
-        c=json.dumps([content,["font",{ "name": font,"size": size,
-            "style": [0,0,0],"color": color }]])
-        self.HC.reqAsync(
+    def send_group_message(self, gid, content,
+                           font="宋体", size=10, color='000000'):
+        self.msg_id += 1
+        c = json.dumps([
+            content, ["font",
+                      {"name": font, "size": size,
+                       "style": [0, 0, 0], "color": color}]])
+        self.http_client.req_async(
             'http://d1.web2.qq.com/channel/send_qun_msg2',
-            data={'r':json.dumps({
-                'group_uin':gid,'content':c,
-                # TODO figure out what `face` is
-                'face':0,
-                'clientid':53999199,'msg_id':self.msgid,
-                'psessionid':self.psessionid})},
-            headers=self.pollHeaders,
+            data={'r': json.dumps({
+                'group_uin': gid, 'content': c,
+                'face': 0,  # TODO figure out what `face` is
+                'clientid': 53999199, 'msg_id': self.msg_id,
+                'psessionid': self.psessionid})},
+            headers=self.poll_headers,
             cb=self._callback_send)
 
-    def addHandler(self,handler):
-        handler.qqClt=self
+    def add_handler(self, handler):
+        handler.qqClt = self
         self.handlers.append(handler)
 
 
-class qqHandler(object):
+class QQHandler(object):
     def __init__(self):
-        self._qqClt=None
+        self._qqClt = None
 
     @property
     def qqClt(self):
         return self._qqClt
-    
+
     @qqClt.setter
-    def qqClt(self,value):
-        if not isinstance(value,qqClient):
+    def qqClt(self, value):
+        if not isinstance(value, QQClient):
             raise TypeError('qqHandler: not a qqClient object.')
         else:
             self._qqClt = value
 
-    def __getattr__(self,name):
+    def __getattr__(self, name):
         return self._qqClt.__getattribute__(name)
 
-    def onFail(self,response,previous):
+    def onFail(self, resp, previous):
         pass
 
-    def onBuddyMessage(self,uin,msg):
+    def onBuddyMessage(self, uin, msg):
         pass
 
-    def onGroupMessage(self,gin,msg):
+    def onGroupMessage(self, gin, msg):
         pass
