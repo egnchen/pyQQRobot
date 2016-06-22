@@ -11,18 +11,20 @@ Here is a simple example.
 
 ```python
 #!/bin/usr/env python3
-from qqRobot import qqClient,qqHandler
 
-class myHandler(qqHandler):
-	def onBuddyMessage(self,uin,msg):
-		self.sendMessage(uin,"Hello, my name is pyQQRobot!")
+from qqrobot import QQClient, QQHandler
 
-if __name__=='__main__':
-	qc=qqClient()
-	qc.QRVeri()
-	qc.login()
-	qc.addHandler(myHandler())
-	qc.listen(join=True)
+
+class MyHandler(QQHandler):
+    def on_buddy_message(self, uin, msg):
+        self.send_message(uin, "Hello, my name is pyQQRobot!")
+
+if __name__ == '__main__':
+    qc = QQClient()
+    qc.QR_veri()
+    qc.login()
+    qc.add_handler(MyHandler())
+    qc.listen(join=True)
 ```
 
 You can refer to src/example.py for another example, using some sort of intelligent robot to respond to messages.
@@ -31,8 +33,8 @@ You can refer to src/example.py for another example, using some sort of intellig
 Here's a brief list of the files included:
 
 * **qqRobot.py** includes
-	* **qqClient** A set of WebQQ APIs and the core runtime of pyQQRobot
-	* **qqHandler** The simple plugin framework.
+    * **qqClient** A set of WebQQ APIs and the core runtime of pyQQRobot
+    * **qqHandler** The simple plugin framework.
 * **qqFriends.py** The QQ friends, groups and discus groups data parser.
 * **qqHttp.py** Simple HTTP Client.
 * **mLogger.py** Simple screen logger.
