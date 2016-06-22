@@ -39,11 +39,8 @@ class qqClient():
                 log.e(TAG,'error retcode %d errmsg %s' % 
                     (response.get('retcode',0),response.get('errmsg','none')))
                 if response.get('retcode',0)==103:
-                    # TODO solve this problem
                     log.w(TAG,'Meet with error 103.')
-                    log.w(TAG,'This is a problem to solve.')
-                    log.w(TAG,'You\'ll have to login to w.qq.com manually '
-                        'on this very computer first.')
+                    log.w(TAG,'Please login @ w.qq.com in a web browser first.')
                     exit()
             else:
                 uin=response['result'][0]['value']['from_uin']
@@ -116,7 +113,6 @@ class qqClient():
     def QRVeri(self,showQR=None):
         TAG='Verify'
         # --------------necessary urls--------------
-        # urlLogin = "https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=16&mibao_css=m_webqq&appid=501004106&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fw.qq.com%2Fproxy.html&f_url=loginerroralert&strong_login=1&login_state=10&t=20131024001"
         urlgetQRImage = "https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=0&l=M&s=5&d=72&v=4&t=0.5"
         urlcheckQRState = "https://ssl.ptlogin2.qq.com/ptqrlogin?webqq_type=10&remember_uin=1&login2qq=1&aid=501004106&u1=http%3A%2F%2Fw.qq.com%2Fproxy.html%3Flogin2qq%3D1%26webqq_type%3D10&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&action=0-0-{timer}&mibao_css=m_webqq&t=undefined&g=1&js_type=0&js_ver=10139&login_sig=&pt_randsalt=0"
         # ------------end necessary urls------------
@@ -246,16 +242,30 @@ class qqClient():
         if join:
             t.join()
 
-    def sendMessage(self,receiver,content):
-        self.msgid = self.msgid + 1
-        receiver=int(receiver)
-        c=json.dumps([content,["font",{ "name": "宋体","size": 10,
-                    "style": [0,0,0],"color": "000000" }]])
+    def sendBuddyMessage(self,uin,content,font="宋体",size=10,color='000000'):
+        self.msgid+=1
+        c=json.dumps([content,["font",{ "name": font,"size": size,
+                    "style": [0,0,0],"color": color }]])
         self.HC.reqAsync(
             'http://d1.web2.qq.com/channel/send_buddy_msg2',
             data={'r':json.dumps({
-                'to':receiver,'content':c,
-                'face':self.fl.f[receiver]['face'],
+                'to':uin,'content':c,
+                'face':self.fl.f[uin]['face'],
+                'clientid':53999199,'msg_id':self.msgid,
+                'psessionid':self.psessionid})},
+            headers=self.pollHeaders,
+            cb=self._callback_send)
+
+    def sendGroupMessage(self,gid,content,font="宋体",size=10,color='000000'):
+        self.msgid+=1
+        c=json.dumps([content,["font",{ "name": font,"size": size,
+            "style": [0,0,0],"color": color }]])
+        self.HC.reqAsync(
+            'http://d1.web2.qq.com/channel/send_qun_msg2',
+            data={'r':json.dumps({
+                'group_uin':gid,'content':c,
+                # TODO figure out what `face` is
+                'face':0,
                 'clientid':53999199,'msg_id':self.msgid,
                 'psessionid':self.psessionid})},
             headers=self.pollHeaders,

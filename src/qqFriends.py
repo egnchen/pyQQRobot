@@ -13,7 +13,7 @@ class qqFriends():
 			self.f[e['uin']]=dict()
 			self.f[e['uin']]['category']=e['categories']
 			self.f[e['uin']]['flag']=e['flag']
-
+			
 		# marknames
 		for e in j['marknames']:
 			self.f[e['uin']]['markname']=e['markname']

@@ -20,7 +20,7 @@ class qqTulingHandler(qqHandler):
             j=json.loads(f.read().decode('utf-8'))
         log.i('Tuling',':'.join((str(uin),msg)))
         log.i('Tuling','response:'+j['text'])
-        self.sendMessage(uin,j['text'])
+        self.sendBuddyMessage(uin,j['text'])
 
 
 if __name__=="__main__":
@@ -29,6 +29,5 @@ if __name__=="__main__":
     a.QRVeri()
     # a.loadVeri('./ekTester.veri')
     a.login()
-
     a.addHandler(h)
     a.listen(join=True)
