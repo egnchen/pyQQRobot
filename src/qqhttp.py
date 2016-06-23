@@ -40,6 +40,9 @@ class mHTTPClient(object):
         self.req_async(url, data=data, headers=headers, cb=cb_text)
 
     def get_json_async(self, url, *, data=None, headers={}, cb=None):
+        if cb is None:
+            raise ValueError(self.str_cb_unclear)
+
         def cb_json(x, y):
             return cb(json.loads(x.decode('utf-8')), y)
         self.req_async(url, data=data, headers=headers, cb=cb_json)

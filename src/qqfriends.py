@@ -1,16 +1,18 @@
 class QQFriends():
     def __init__(self):
-        self.f = dict()  # friends list
-        self.g = dict()  # group list
-        self.d = dict()  # discus group list
-        self.r = dict()  # recent list
+        self.f = {}  # friends list
+        self.g = {}  # group list
+        self.d = {}  # discus group list
+        self.r = {}  # recent list
         self.c = []
+        self.group_info = {}
+        self.user_info = {}
 
     def parse_friends(self, j):
         j = j['result']
         # category,  uin & flag
         for e in j['friends']:
-            self.f[e['uin']] = dict()
+            self.f[e['uin']] = {}
             self.f[e['uin']]['category'] = e['categories']
             self.f[e['uin']]['flag'] = e['flag']
 
@@ -46,4 +48,31 @@ class QQFriends():
             del(e['did'])
 
     def parse_recent(self, j):
-        self.r = j['result']
+        j = j['result']
+        self.r[0] = []
+        self.r[1] = []
+        for b in j:
+            self.r[b['type']].append(b['uin'])
+
+    def parse_online_buddies(self, j):
+        pass
+
+    def get_group_info(self, gid):
+        return self.group_info.get(gid)
+
+    def parse_group_info(self, j):
+        j = j['result']['group_info']
+        g = j['gid']
+        del(j['gid'])
+        self.group_info[g] = j
+        return j
+
+    def get_user_info(self, uin):
+        return self.user_info.get(uin)
+
+    def parse_user_info(self, j):
+        j = j['result']
+        u = j['uin']
+        del(j['uin'])
+        self.user_info[u] = j
+        return j
