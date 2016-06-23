@@ -42,25 +42,33 @@ class QQClient():
         tag = 'Listener'
         try:
             resp = json.loads(resp.decode('utf-8'))
-            if resp.get('retcode', 0) != 0 or resp.get('result') is None:
+            if resp.get('retcode', 0) != 0:
                 # something is wrong
                 log.e(tag, 'error retcode %d errmsg %s' % (
                     resp.get('retcode', 0), resp.get('errmsg', 'none')))
                 if resp.get('retcode', 0) == 103:
+                    # Connection failed, log in again.
                     log.w(tag, 'Meet with error 103.')
-                    log.w(tag, 'Please login @ w.qq.com manually first.')
+                    log.w(tag, 'Please log in again')
                     exit()
             else:
-                uin = resp['result'][0]['value']['from_uin']
-                msg = resp['result'][0]['value']['content'][1]
-                if resp['result'][0]['poll_type'] == 'message':
-                    log.v(tag, 'got message from friend ' + str(uin))
-                    for h in self.handlers:
-                        h.on_buddy_message(uin, msg)
-                if resp['result'][0]['poll_type'] == 'group_message':
-                    log.v(tag, 'got message from group ' + str(uin))
-                    for h in self.handlers:
-                        h.on_group_message(uin, msg)
+                if resp.get('errmsg') is not None:
+                    # {errmsg: "error!!!", retcode: 0}
+                    # time exceeds every minute, just ignore it.
+                    log.v(tag, 'listening...')
+                    return
+                for c in resp['result']:
+                    num = c['value']['from_uin']
+                    msg = c['value']['content'][1]
+                    if c['poll_type'] == 'message':
+                        log.v(tag, 'got message from friend ' + str(num))
+                        for h in self.handlers:
+                            h.on_buddy_message(num, msg)
+                    elif c['poll_type'] == 'group_message':
+                        log.v(tag, 'got message from group ' + str(num))
+                        uin = c['value']['send_uin']
+                        for h in self.handlers:
+                            h.on_group_message(num, uin, msg)
         except Exception:
             log.e(tag, 'Fatal error parsing messages.')
             log.e(tag, resp)
@@ -246,7 +254,9 @@ class QQClient():
             'http://d1.web2.qq.com/channel/get_online_buddies2?'
             'vfwebqq={}&clientid={}&psessionid={}&t={}').format(
             self.vfwebqq, 53999199, self.psessionid, utime())
-        self.http_client.get_json(url_get_online, headers=self.poll_headers)
+        self.friend_list.parse_online_buddies(
+            self.http_client.get_json(
+                url_get_online, headers=self.poll_headers))
         log.i('list', 'Online buddies list fetched.')
 
     def get_recent_list(self):
@@ -258,6 +268,34 @@ class QQClient():
                   'psessionid': self.psessionid})},
             headers=self.poll_headers))
         log.i('list', 'Recent list fetched.')
+
+    def get_user_info(self, uin):
+        # method is GET
+        r = self.friend_list.get_user_info(uin)
+        if r is not None:
+            return r
+        else:
+            url_get_user_info = (
+                'http://s.web2.qq.com/api/get_friend_info2?'
+                'tuin={}&vfwebqq={}&t={}})').format(
+                uin, self.vfwebqq, utime())
+            j = self.http_client.get_json(
+                url_get_user_info, headers=self.default_headers)
+            return self.friend_list.parse_user_info(j)
+
+    def get_group_info(self, gid):
+        # method is GET
+        r = self.friend_list.get_group_info(gid)
+        if r is not None:
+            return r
+        else:
+            url_get_group_info = (
+                'http://s.web2.qq.com/api/get_group_info_ext2?'
+                'gcode={}&vfwebqq={}&t={}}').format(
+                gid, self.vfwebqq, utime())
+            j = self.http_client.get_json(
+                url_get_group_info, headers=self.default_headers)
+            return self.friend_list.parse_group_info(j)
 
     def listen(self, join=False):
         url_poll2 = 'http://d1.web2.qq.com/channel/poll2'
@@ -275,6 +313,7 @@ class QQClient():
 
         t = threading.Thread(name='qq_client_listener', target=l)
         t.start()
+        log.i('listener', 'Listen thread started.')
         if join:
             t.join()
 
@@ -313,33 +352,27 @@ class QQClient():
             cb=self._callback_send)
 
     def add_handler(self, handler):
-        handler.qqClt = self
+        handler.set_qq_client(self)
         self.handlers.append(handler)
 
 
 class QQHandler(object):
     def __init__(self):
-        self._qqClt = None
+        self._qq_client = None
 
-    @property
-    def qqClt(self):
-        return self._qqClt
-
-    @qqClt.setter
-    def qqClt(self, value):
-        if not isinstance(value, QQClient):
-            raise TypeError('qqHandler: not a qqClient object.')
-        else:
-            self._qqClt = value
+    def set_qq_client(self, c):
+        if not isinstance(c, QQClient):
+            raise TypeError('QQHandler: not a QQClient object.')
+        self._qq_client = c
 
     def __getattr__(self, name):
-        return self._qqClt.__getattribute__(name)
+        return self._qq_client.__getattribute__(name)
 
-    def onFail(self, resp, previous):
+    def on_fail(self, resp, previous):
         pass
 
-    def onBuddyMessage(self, uin, msg):
+    def on_buddy_message(self, uin, msg):
         pass
 
-    def onGroupMessage(self, gin, msg):
+    def on_group_message(self, gid, uin, msg):
         pass
