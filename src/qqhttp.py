@@ -3,9 +3,10 @@ from multiprocessing.dummy import Pool
 from urllib import request, parse
 from http.cookiejar import Cookie, MozillaCookieJar
 
+import mlogger as log
+
 
 class mHTTPClient(object):
-
     str_cb_unclear = 'Callback method not specified.'
 
     def req(self, url, *, data=None, headers={}):
@@ -68,8 +69,11 @@ class mHTTPClient_urllib(mHTTPClient):
         if data is not None:
             r.data = parse.urlencode(data).encode('utf-8')
         r.headers.update(headers)
-        with self.opener.open(r) as f:
-            return f.read()
+        try:
+            with self.opener.open(r) as f:
+                return f.read()
+        except Exception:
+            log.w('http_client', 'got an HTTP error.')  # ignored
 
     def req_async(self, url, *, data=None, headers={}, cb=None):
         if cb is None:
@@ -96,11 +100,14 @@ class mHTTPClient_urllib(mHTTPClient):
                 name, domain, path))
 
     def get_cookies(self):
+        '''get all the cookies saved.
+        path is ignored here, as it's always '/'(the root)
+        '''
         d = {}
         for domain, cookieDict in self.cj._cookies.items():
             d[domain] = {}
             for path, cks in cookieDict.items():
-                d[domain][path] = {n: ck.value for n, ck in cks.items()}
+                d[domain].update({n: ck.value for n, ck in cks.items()})
         return d
 
     def clear_cookie(self):

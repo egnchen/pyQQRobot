@@ -8,6 +8,11 @@ As a Senior Two student(about to one in Senior Three) in China there just cannot
 
 ## How to use?
 
+### Verifications now can be saved
+`QQRobot.save_veri` and `QQRobot.load_veri` have been implemented to save and load verification from files.
+
+Verification files are encoded in `JSON`, contain cookies, friend list, group list and discus group list information.
+
 ### PEP8 Ready!
 The newest version contains **some huge changes to names of classes and functions. Please pay attention.**
 
@@ -26,30 +31,16 @@ class MyHandler(QQHandler):
         self.send_message(uin, "Hello, my name is pyQQRobot!")
 
 if __name__ == '__main__':
-    qc = QQClient()
-    qc.QR_veri()
-    qc.login()
-    qc.add_handler(MyHandler())
-    qc.listen(join=True)
-```
+    # you can save your verification
+    # a.QR_veri()
+    # a.save_veri('/the/path/to/your/verification/file')
+    # a.login()
 
-in comparison to older version:
-
-```python
-#!/usr/bin/env python3
-
-from qqRobot import qqClient,qqHandler
-
-class myHandler(qqHandler):
-   def onBuddyMessage(self,uin,msg):
-       self.sendMessage(uin,"Hello, my name is pyQQRobot!")
-
-if __name__=='__main__':
-   qc=qqClient()
-   qc.QRVeri()
-   qc.login()
-   qc.addHandler(myHandler())
-   qc.listen(join=True)
+    # or load from a file instead
+    a.load_veri('./my_verification.veri')
+    # You don't need to fetch all that lists,
+    # as they are already loaded from verfication files.
+    a.login(get_info=False)
 ```
 
 You can refer to src/example.py for another example, using some sort of intelligent robot to respond to messages.
@@ -62,18 +53,19 @@ Discus groups & more functions will be supported in the future.
 ## Structure
 Here's a brief list of the files included:
 
-* **qqRobot.py** includes
-    * **qqClient** A set of WebQQ APIs and the core runtime of pyQQRobot
-    * **qqHandler** The simple plugin framework.
-* **qqFriends.py** The QQ friends, groups and discus groups data parser.
-* **qqHttp.py** Simple HTTP Client.
-* **mLogger.py** Simple screen logger.
+* **qqrobot.py** includes
+    * **QQClient** A set of WebQQ APIs and the core runtime of pyQQRobot
+    * **QQHandler** The simple plugin framework.
+* **qqfriends.py** The QQ friends, groups and discus groups data parser.
+* **qqhttp.py** Simple HTTP Client.
+* **mlogger.py** Simple screen logger.
 
 Commonly **qqRobot** is what you all need.
 
 ## Known bugs & Possible improvements
 1. ~~`retcode 103` when sending `poll2` requests.~~ Problem solved.
-2. Possible unhandled `404` errors can lead to crash.
+2. ~~Possible unhandled `404` errors can lead to crash.~~ 404 errors ignored.
 3. More APIs.
 4. Using `gevents` instead of `urllib` with `multiprocessing.dummy`.
 5. Better `mLogger` with filtering functions.
+6. ~~To save verification in files, and read them.~~

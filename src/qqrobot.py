@@ -185,13 +185,12 @@ class QQClient():
             'p_uin',
             self.http_client.get_cookie('p_uin', '.web2.qq.com'),
             'w.qq.com')
-        self.ptwebqq = self.http_client.get_cookie('ptwebqq', '.qq.com')
 
         # log.i(tag, 'Saving verification...')
         # save verification now
         # self.saveVeri('./'+username+'.veri')
 
-    def login(self):
+    def login(self, get_info=True, save_veri=False, filename=None):
         # --------necessary urls & data--------
         url_get_vfwebqq = "http://s.web2.qq.com/api/getvfwebqq?" \
                           "ptwebqq={ptwebqq}&psessionid=&t=1456633306528"
@@ -200,6 +199,8 @@ class QQClient():
                        'pssessionid': '', 'status': 'online'}
         # ------end necessary urls & data------
 
+        # get ptwebqq
+        self.ptwebqq = self.http_client.get_cookie('ptwebqq', '.qq.com')
         # get vfwebqq
         self.vfwebqq = self.http_client.get_json(
             url_get_vfwebqq.format(ptwebqq=self.ptwebqq),
@@ -214,11 +215,43 @@ class QQClient():
         self.psessionid = j2['result']['psessionid']
         self.status = j2['result']['status']
         self.get_qq_hash()
-        self.get_user_friends()
-        self.get_group_list()
-        self.get_discus_list()
+        if get_info:
+            self.get_user_friends()
+            self.get_group_list()
+            self.get_discus_list()
+        if save_veri:
+            self.save_veri()
         self.get_online_buddies()
         self.get_recent_list()
+
+    def save_veri(self, filename=None):
+        if filename is None:
+            filename = './' + str(self.uin) + '.veri'
+
+        with open(filename, 'w') as f:
+            # save all cookies
+            f.write('{"cookies":')
+            json.dump(self.http_client.get_cookies(), f)
+            # save user friends, groups and discus groups
+            f.write(',\n"friends":')
+            json.dump(self.friend_list.f, f)
+            f.write(',\n"groups":')
+            json.dump(self.friend_list.g, f)
+            f.write(',\n"discus_groups":')
+            json.dump(self.friend_list.d, f)
+            f.write('}')
+
+        return filename
+
+    def load_veri(self, filename):
+        with open(filename, 'r') as f:
+            v = json.load(f)
+        for domain, cookies in v['cookies'].items():
+            for name, value in cookies.items():
+                self.http_client.set_cookie(name, value, domain)
+        self.friend_list.f = v['friends']
+        self.friend_list.g = v['groups']
+        self.friend_list.d = v['discus_groups']
 
     def get_user_friends(self):
         self.friend_list.parse_friends(self.http_client.get_json(
@@ -313,7 +346,7 @@ class QQClient():
 
         t = threading.Thread(name='qq_client_listener', target=l)
         t.start()
-        log.i('listener', 'Listen thread started.')
+        log.i('listener', 'Listener thread started.')
         if join:
             t.join()
 

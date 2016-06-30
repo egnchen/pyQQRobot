@@ -31,8 +31,14 @@ class QQTulingHandler(QQHandler):
 if __name__ == "__main__":
     a = QQClient()
     h = QQTulingHandler(input('API Key:'))
-    a.QR_veri()
-    # a.loadVeri('./ekTester.veri')
-    a.login()
+    # you can save your verification
+    # a.QR_veri()
+    # a.save_veri('/the/path/to/your/verification/file')
+    # a.login()
+
+    # or load from a file instead
+    a.load_veri('./my_verification.veri')
+    a.login(get_info=False)
+
     a.add_handler(h)
     a.listen(join=True)

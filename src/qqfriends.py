@@ -51,6 +51,7 @@ class QQFriends():
         j = j['result']
         self.r[0] = []
         self.r[1] = []
+        self.r[2] = []
         for b in j:
             self.r[b['type']].append(b['uin'])
 
