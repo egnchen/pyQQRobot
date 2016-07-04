@@ -31,14 +31,18 @@ class QQTulingHandler(QQHandler):
 if __name__ == "__main__":
     a = QQClient()
     h = QQTulingHandler(input('API Key:'))
+
     # you can save your verification
-    # a.QR_veri()
-    # a.save_veri('/the/path/to/your/verification/file')
-    # a.login()
+    a.QR_veri()
+    a.login()
+    # a.login(save_veri=True) to save verfication file when
+    # login succeeded, or use the following method when
+    # you want to save the verification file.
+    a.save_veri()  # default filename will be ./`QQClient.uin`.veri
 
     # or load from a file instead
-    a.load_veri('./my_verification.veri')
-    a.login(get_info=False)
+    # a.load_veri('path/to/your/verification/file')
+    # a.login(get_info=False)
 
     a.add_handler(h)
     a.listen(join=True)

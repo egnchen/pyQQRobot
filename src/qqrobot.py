@@ -186,10 +186,6 @@ class QQClient():
             self.http_client.get_cookie('p_uin', '.web2.qq.com'),
             'w.qq.com')
 
-        # log.i(tag, 'Saving verification...')
-        # save verification now
-        # self.saveVeri('./'+username+'.veri')
-
     def login(self, get_info=True, save_veri=False, filename=None):
         # --------necessary urls & data--------
         url_get_vfwebqq = "http://s.web2.qq.com/api/getvfwebqq?" \
@@ -249,9 +245,13 @@ class QQClient():
         for domain, cookies in v['cookies'].items():
             for name, value in cookies.items():
                 self.http_client.set_cookie(name, value, domain)
-        self.friend_list.f = v['friends']
-        self.friend_list.g = v['groups']
-        self.friend_list.d = v['discus_groups']
+        # TODO deal with the int-key conversion issues
+        self.friend_list.f = {
+            int(id): value for id, value in v['friends'].items()}
+        self.friend_list.g = {
+            int(id): value for id, value in v['groups'].items()}
+        self.friend_list.d = {
+            int(id): value for id, value in v['discus_groups'].items()}
 
     def get_user_friends(self):
         self.friend_list.parse_friends(self.http_client.get_json(
@@ -409,3 +409,4 @@ class QQHandler(object):
 
     def on_group_message(self, gid, uin, msg):
         pass
+

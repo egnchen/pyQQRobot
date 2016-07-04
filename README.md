@@ -32,12 +32,12 @@ class MyHandler(QQHandler):
 
 if __name__ == '__main__':
     # you can save your verification
-    # a.QR_veri()
-    # a.save_veri('/the/path/to/your/verification/file')
-    # a.login()
+    a.QR_veri()
+    a.login()
+    a.save_veri('/the/path/to/your/verification/file')
 
     # or load from a file instead
-    a.load_veri('./my_verification.veri')
+    a.load_veri('/the/path/to/your/verfication/file')
     # You don't need to fetch all that lists,
     # as they are already loaded from verfication files.
     a.login(get_info=False)
