@@ -4,7 +4,7 @@
 A QQ Robot framework based on WebQQ and Python3.
 
 ## Disclaimer
-As a Senior Two student(about to one in Senior Three) in China there just cannot be enough time for me to maintain the project often. I sincerely hope that there'll be coders interested to help.
+As a Senior Three student in China there just cannot be enough time for me to maintain the project often. I sincerely hope that there'll be coders interested to help.
 
 ## How to use?
 
@@ -12,11 +12,6 @@ As a Senior Two student(about to one in Senior Three) in China there just cannot
 `QQRobot.save_veri` and `QQRobot.load_veri` have been implemented to save and load verification from files.
 
 Verification files are encoded in `JSON`, contain cookies, friend list, group list and discus group list information.
-
-### PEP8 Ready!
-The newest version contains **some huge changes to names of classes and functions. Please pay attention.**
-
-For more information on PEP8 standards, [click here](https://www.douban.com/note/134971609/).
 
 Here is a simple example.
 
@@ -37,7 +32,7 @@ if __name__ == '__main__':
     a.save_veri('/the/path/to/your/verification/file')
 
     # or load from a file instead
-    a.load_veri('/the/path/to/your/verfication/file')
+    a.load_veri('/the/path/to/your/verification/file')
     # You don't need to fetch all that lists,
     # as they are already loaded from verfication files.
     a.login(get_info=False)
