@@ -101,7 +101,7 @@ class mHTTPClient_urllib(mHTTPClient):
 
     def get_cookies(self):
         '''get all the cookies saved.
-        path is ignored here, as it's always '/'(the root)
+        path is ignored here, as it's always '/'(root)
         '''
         d = {}
         for domain, cookieDict in self.cj._cookies.items():

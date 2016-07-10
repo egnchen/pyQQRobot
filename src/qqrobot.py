@@ -39,7 +39,7 @@ class QQClient():
         self.handlers = handlers
 
     def _callback_receive(self, resp, previous):
-        tag = 'Listener'
+        tag = 'listener'
         try:
             resp = json.loads(resp.decode('utf-8'))
             if resp.get('retcode', 0) != 0:
@@ -126,7 +126,7 @@ class QQClient():
     #     self.http_client.loadCookie(filename)
 
     def QR_veri(self, show_QR=None):
-        tag = 'Verify'
+        tag = 'verify'
         # --------------necessary urls--------------
         url_get_QR_image = "https://ssl.ptlogin2.qq.com/ptqrshow?" \
                            "appid=501004106&e=0&l=M&s=5&d=72&v=4&t=0.5"
@@ -142,6 +142,8 @@ class QQClient():
 
         # get QR image
         if show_QR is None:
+            log.w(tag, ("showQR method is not specified, will use default "
+                "which is only runs in Mac OSX."))
             # Mac OSX
             def s():
                 os.system('open ' +
