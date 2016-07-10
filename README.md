@@ -8,6 +8,21 @@ As a Senior Three student in China there just cannot be enough time for me to ma
 
 ## How to use?
 
+### Logs now can be filtered and saved
+the logger is fully rewritten and now support filteration and preservation. Check out `mLogger.py` for details.
+
+```python
+mLogger.supress_tag('this_tag_wont_be_shown_on_the_screen')
+mLogger.supress_level(mLogger.levels.w)  # w, i, e, v
+mLogger.unsupress_tag('show_this_tag_again')
+mLogger.unsupress_level(mLogger.levels.w) # w, i, e, v
+mLogger.unsupress_all_tags()
+mLogger.unsupress_all_levels()
+
+mLogger.i('tag', "this won't be saved in the file", save=False)
+mLogger.save('/path/to/your/log/saved/in/json')
+```
+
 ### Verifications now can be saved
 `QQRobot.save_veri` and `QQRobot.load_veri` have been implemented to save and load verification from files.
 
@@ -29,10 +44,10 @@ if __name__ == '__main__':
     # you can save your verification
     a.QR_veri()
     a.login()
-    a.save_veri('/the/path/to/your/verification/file')
+    a.save_veri('/path/to/your/verification/file')
 
     # or load from a file instead
-    a.load_veri('/the/path/to/your/verification/file')
+    a.load_veri('/path/to/your/verification/file')
     # You don't need to fetch all that lists,
     # as they are already loaded from verfication files.
     a.login(get_info=False)
@@ -62,5 +77,5 @@ Commonly **qqRobot** is what you all need.
 2. ~~Possible unhandled `404` errors can lead to crash.~~ 404 errors ignored.
 3. More APIs.
 4. Using `gevents` instead of `urllib` with `multiprocessing.dummy`.
-5. Better `mLogger` with filtering functions.
+5. ~~Better `mLogger` with filtering functions.~~
 6. ~~To save verification in files, and read them.~~
