@@ -255,6 +255,26 @@ class QQClient():
         self.friend_list.d = {
             int(id): value for id, value in v['discus_groups'].items()}
 
+    def listen(self, join=False):
+        url_poll2 = 'http://d1.web2.qq.com/channel/poll2'
+        d = {'r': json.dumps({
+            "ptwebqq": self.ptwebqq, "clientid": 53999199,
+            "psessionid": self.psessionid, "key": ""})}
+
+        def l():
+            while True:
+                r = self.http_client.req(
+                    url_poll2, data=d, headers=self.poll_headers)
+                self._callback_receive(
+                    r, {'url': url_poll2,
+                        'data': d, 'headers': self.poll_headers})
+
+        t = threading.Thread(name='qq_client_listener', target=l)
+        t.start()
+        log.i('listener', 'Listener thread started.')
+        if join:
+            t.join()
+
     def get_user_friends(self):
         self.friend_list.parse_friends(self.http_client.get_json(
             'http://s.web2.qq.com/api/get_user_friends2',
@@ -331,26 +351,6 @@ class QQClient():
             j = self.http_client.get_json(
                 url_get_group_info, headers=self.default_headers)
             return self.friend_list.parse_group_info(j)
-
-    def listen(self, join=False):
-        url_poll2 = 'http://d1.web2.qq.com/channel/poll2'
-        d = {'r': json.dumps({
-            "ptwebqq": self.ptwebqq, "clientid": 53999199,
-            "psessionid": self.psessionid, "key": ""})}
-
-        def l():
-            while True:
-                r = self.http_client.req(
-                    url_poll2, data=d, headers=self.poll_headers)
-                self._callback_receive(
-                    r, {'url': url_poll2,
-                        'data': d, 'headers': self.poll_headers})
-
-        t = threading.Thread(name='qq_client_listener', target=l)
-        t.start()
-        log.i('listener', 'Listener thread started.')
-        if join:
-            t.join()
 
     def send_buddy_message(self, uin, content,
                            font="宋体", size=10, color='000000'):
