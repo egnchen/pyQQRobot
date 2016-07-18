@@ -4,29 +4,11 @@
 A QQ Robot framework based on WebQQ and Python3.
 
 ## Disclaimer
-As a Senior Three student in China there just cannot be enough time for me to maintain the project often. I sincerely hope that there'll be coders interested to help.
+As a Senior Three student in China there just cannot be enough time for me to maintain the project. I sincerely hope that there'll be coders interested to help.
+
+漫漫高三路，山路曲折盘旋，但毕竟朝着顶峰延伸。
 
 ## How to use?
-
-### Logs now can be filtered and saved
-the logger is fully rewritten and now support filteration and preservation. Check out `mLogger.py` for details.
-
-```python
-mlogger.supress_tag('this_tag_wont_be_shown_on_the_screen')
-mlogger.supress_level(mlogger.levels.w)  # w, i, e, v
-mlogger.unsupress_tag('show_this_tag_again')
-mlogger.unsupress_level(mlogger.levels.w) # w, i, e, v
-mlogger.unsupress_all_tags()
-mlogger.unsupress_all_levels()
-
-mlogger.i('tag', "this won't be saved in the file", save=False)
-mlogger.save('/path/to/your/log/saved/in/json')
-```
-
-### Verifications now can be saved
-`QQRobot.save_veri` and `QQRobot.load_veri` have been implemented to save and load verification from files.
-
-Verification files are encoded in `JSON`, contain cookies, friend list, group list and discus group list information.
 
 Here is a simple example.
 
@@ -56,9 +38,31 @@ if __name__ == '__main__':
 You can refer to src/example.py for another example, using some sort of intelligent robot to respond to messages.
 
 ## Functions
-Up till now you can receive & send messages to your buddies and in groups.
+Now you can:
 
-Discus groups & more functions will be supported in the future.
+* send messages to your buddies and group
+* set listeners to messages from your buddies and group
+* get information about yourself, your buddies and group
+
+### Logs now can be filtered and saved
+the logger is fully rewritten and now support filteration and preservation. Check out `mLogger.py` for details.
+
+```python
+mlogger.supress_tag('this_tag_wont_be_shown_on_the_screen')
+mlogger.supress_level(mlogger.levels.w)  # w, i, e, v
+mlogger.unsupress_tag('show_this_tag_again')
+mlogger.unsupress_level(mlogger.levels.w) # w, i, e, v
+mlogger.unsupress_all_tags()
+mlogger.unsupress_all_levels()
+
+mlogger.i('tag', "this won't be saved in the file", save=False)
+mlogger.save('/path/to/your/log/saved/in/json')
+```
+
+### Verifications now can be saved
+`QQRobot.save_veri` and `QQRobot.load_veri` have been implemented to save and load verification from files.
+
+Verification files are encoded in `JSON`, contain cookies, friend list, group list and discus group list information.
 
 ## Structure
 Here's a brief list of the files included:
@@ -69,8 +73,6 @@ Here's a brief list of the files included:
 * **qqfriends.py** The QQ friends, groups and discus groups data parser.
 * **qqhttp.py** Simple HTTP Client.
 * **mlogger.py** Simple screen logger.
-
-Commonly **qqRobot** is what you all need.
 
 ## Known bugs & Possible improvements
 1. ~~`retcode 103` when sending `poll2` requests.~~ Problem solved.
