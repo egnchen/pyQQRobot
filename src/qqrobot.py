@@ -81,7 +81,7 @@ class QQClient():
         if resp.get('errCode', 0) != 0 or resp.get('retcode', 0) != 0:
             # retcode1202 is an error which is not and should be ignored.
             if resp.get('retcode', 0) == 1202:
-                log.i(tag, 'retcode 1202.')
+                log.v(tag, 'retcode 1202.')
 
     def _parse_arg(self, js_str):
         js_str = js_str[js_str.index('(') + 1: len(js_str) - 2]
@@ -324,6 +324,19 @@ class QQClient():
             headers=self.poll_headers))
         log.i('list', 'Recent list fetched.')
 
+    def get_self_info(self):
+        # method is GET
+        if not hasattr(self, 'info'):
+            r = self.http_client.get_json(
+                'http://s.web2.qq.com/api/get_self_info2?t' + str(utime()),
+                headers=self.default_header)
+            if r['retcode'] == 0:
+                self.info = r['result']
+            else:
+                log.e('info', 'User self info fetching failed.')
+        return self.info
+        
+
     def get_user_info(self, uin):
         # method is GET
         r = self.friend_list.get_user_info(uin)
@@ -392,6 +405,9 @@ class QQClient():
 
 
 class QQHandler(object):
+    _alloc = ('get_user_info', 'get_user_info', 'get_group_info',
+              'send_buddy_message', 'send_group_message')
+
     def __init__(self):
         self._qq_client = None
 
@@ -401,7 +417,8 @@ class QQHandler(object):
         self._qq_client = c
 
     def __getattr__(self, name):
-        return self._qq_client.__getattribute__(name)
+        if name in self._alloc:
+            return self._qq_client.__getattribute__(name)
 
     def on_fail(self, resp, previous):
         pass
