@@ -12,15 +12,15 @@ As a Senior Three student in China there just cannot be enough time for me to ma
 the logger is fully rewritten and now support filteration and preservation. Check out `mLogger.py` for details.
 
 ```python
-mLogger.supress_tag('this_tag_wont_be_shown_on_the_screen')
-mLogger.supress_level(mLogger.levels.w)  # w, i, e, v
-mLogger.unsupress_tag('show_this_tag_again')
-mLogger.unsupress_level(mLogger.levels.w) # w, i, e, v
-mLogger.unsupress_all_tags()
-mLogger.unsupress_all_levels()
+mlogger.supress_tag('this_tag_wont_be_shown_on_the_screen')
+mlogger.supress_level(mlogger.levels.w)  # w, i, e, v
+mlogger.unsupress_tag('show_this_tag_again')
+mlogger.unsupress_level(mlogger.levels.w) # w, i, e, v
+mlogger.unsupress_all_tags()
+mlogger.unsupress_all_levels()
 
-mLogger.i('tag', "this won't be saved in the file", save=False)
-mLogger.save('/path/to/your/log/saved/in/json')
+mlogger.i('tag', "this won't be saved in the file", save=False)
+mlogger.save('/path/to/your/log/saved/in/json')
 ```
 
 ### Verifications now can be saved
