@@ -70,10 +70,11 @@ class mHTTPClient_urllib(mHTTPClient):
             r.data = parse.urlencode(data).encode('utf-8')
         r.headers.update(headers)
         try:
-            with self.opener.open(r) as f:
-                return f.read()
+            f = self.opener.open(r)
+            return f.read()
         except Exception:
-            log.w('http_client', 'got an HTTP error.')  # ignored
+            log.w('http', 'HTTP error: errNo. ' + f.code)
+            log.w('http', 'url: ' + url)
 
     def req_async(self, url, *, data=None, headers={}, cb=None):
         if cb is None:
