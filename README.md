@@ -1,41 +1,55 @@
+**State**: stable (sometimes)
+
+**Maintainance**: unknown
+
 # pyQQRobot
 基于Python3与WebQQ的QQ机器人框架。
 
 A QQ Robot framework based on WebQQ and Python3.
 
 ## Disclaimer
-As a Senior Three student in China there just cannot be enough time for me to maintain the project. I sincerely hope that there'll be coders interested to help.
-
-漫漫高三路，山路曲折盘旋，但毕竟朝着顶峰延伸。
+As a **Senior Three student in China** there just cannot be enough time for me to maintain the project. I sincerely hope that there'll be coders interested to help.
 
 ## How to use?
 
 Here is a simple example.
 
 ```python
-#!/bin/usr/env python3
+#!/usr/bin/env python3
 
 from qqrobot import QQClient, QQHandler
-
+import mlogger as log
 
 class MyHandler(QQHandler):
     def on_buddy_message(self, uin, msg):
-        self.send_message(uin, "Hello, my name is pyQQRobot!")
+        log.i('QQ', 'got message from ' + str(uin))
+        self.send_buddy_message(uin, "Powered by pyQQRobot.")
 
 if __name__ == '__main__':
-    # you can save your verification
-    a.QR_veri()
-    a.login()
-    a.save_veri('/path/to/your/verification/file')
+    client = QQClient()
+    log_or_load = 'log'
 
-    # or load from a file instead
-    a.load_veri('/path/to/your/verification/file')
-    # You don't need to fetch all that lists,
-    # as they are already loaded from verfication files.
-    a.login(get_info=False)
+    if log_or_load == 'log':
+        # you can log in manually
+        client.QR_veri()
+        client.login()
+        # and then save your verification
+        client.save_veri('./' + client.uin + '.veri')
+    elif log_or_load == 'load':
+        # or load from a file instead
+        client.load_veri('./my_verification.veri')
+        # You don't need to fetch all that lists,
+        # as they are already loaded from verfication files.
+        client.login(get_info=False)
+
+    # create & add a message handler
+    h = MyHandler()
+    client.add_handler(h)
+    # then start your journey...
+    client.listen()
 ```
 
-You can refer to src/example.py for another example, using some sort of intelligent robot to respond to messages.
+You can refer to `src/example.py` for another example, using some sort of intelligent robot to respond to messages.
 
 ## Functions
 Now you can:
@@ -44,7 +58,9 @@ Now you can:
 * set listeners to messages from your buddies and group
 * get information about yourself, your buddies and group
 
-### Logs now can be filtered and saved
+No discuss groups included.
+
+### Logs can be filtered and saved
 the logger is fully rewritten and now support filteration and preservation. Check out `mLogger.py` for details.
 
 ```python
@@ -58,11 +74,6 @@ mlogger.unsupress_all_levels()
 mlogger.i('tag', "this won't be saved in the file", save=False)
 mlogger.save('/path/to/your/log/saved/in/json')
 ```
-
-### Verifications now can be saved
-`QQRobot.save_veri` and `QQRobot.load_veri` have been implemented to save and load verification from files.
-
-Verification files are encoded in `JSON`, contain cookies, friend list, group list and discus group list information.
 
 ## Structure
 Here's a brief list of the files included:

@@ -49,39 +49,46 @@ class QQClient():
                 if resp.get('retcode', 0) == 103:
                     # Connection failed, log in again.
                     log.w(tag, 'Meet with error 103.')
-                    log.w(tag, 'Please log in again')
+                    log.w(tag, 'You\'ll have to log in again.')
                     exit()
             else:
-                if resp.get('errmsg') is not None:
-                    # {errmsg: "error!!!", retcode: 0}
-                    # time exceeds every minute, just ignore it.
-                    log.v(tag, 'listening...')
+                if resp.get('retcode') != 0:
+                    # something is really wrong
+                    log.e(tag, 'retcode %s errmsg %s' % (
+                        resp.get('errmsg'),resp.get('retcode')))
                     return
+
+                if resp.get('errmsg') == 'error!!!':
+                    # {errmsg: "error!!!", retcode: 0}
+                    # http connection time out
+                    # ignore it and continue listening
+                    return
+
+                # parse result
                 for c in resp['result']:
-                    num = c['value']['from_uin']
-                    msg = c['value']['content'][1]
+                    num = c['value']['from_uin'] # uin or gid
+                    msg = c['value']['content'][1] # content
                     if c['poll_type'] == 'message':
-                        log.v(tag, 'got message from friend ' + str(num))
                         for h in self.handlers:
                             h.on_buddy_message(num, msg)
                     elif c['poll_type'] == 'group_message':
-                        log.v(tag, 'got message from group ' + str(num))
-                        uin = c['value']['send_uin']
+                        uin = c['value']['send_uin'] # uin
                         for h in self.handlers:
                             h.on_group_message(num, uin, msg)
         except Exception:
             log.e(tag, 'Fatal error parsing messages.')
-            log.e(tag, resp)
+            log.e(tag, 'Response: ' + str(resp))
             traceback.print_exc()
 
     def _callback_send(self, resp, previous):
-        tag = 'Sender'
+        tag = 'sender'
         resp = json.loads(resp.decode('utf-8'))
-        log.v(tag, 'Got feedback.')
         if resp.get('errCode', 0) != 0 or resp.get('retcode', 0) != 0:
-            # retcode1202 is an error which is not and should be ignored.
+            log.w(tag, 'The following error occurred when sending last message:')
             if resp.get('retcode', 0) == 1202:
-                log.v(tag, 'retcode 1202.')
+                # retcode 1202: ignored, as WebQQ itself has ignored it too.
+                log.w(tag, '\tretcode 1202')
+                log.w(tag, '\tMessage could be lost, but usually not big deal.')
 
     def _parse_arg(self, js_str):
         js_str = js_str[js_str.index('(') + 1: len(js_str) - 2]
@@ -189,6 +196,7 @@ class QQClient():
             'w.qq.com')
 
     def login(self, get_info=True, save_veri=False, filename=None):
+        tag = 'login'
         # --------necessary urls & data--------
         url_get_vfwebqq = "http://s.web2.qq.com/api/getvfwebqq?" \
                           "ptwebqq={ptwebqq}&psessionid=&t=1456633306528"
@@ -206,8 +214,8 @@ class QQClient():
 
         # second step login
         post_login2['ptwebqq'] = self.ptwebqq
-        j2 = self.http_client.get_json(url_login2,
-                                       data={'r': json.dumps(post_login2)})
+        j2 = self.http_client.get_json(
+            url_login2, data={'r': json.dumps(post_login2)})
 
         self.uin = j2['result']['uin']
         self.psessionid = j2['result']['psessionid']
@@ -218,7 +226,7 @@ class QQClient():
             self.get_group_list()
             self.get_discus_list()
         if save_veri:
-            self.save_veri()
+            log.i(tag, 'Verification saved @ ' + self.save_veri(filename))
         self.get_online_buddies()
         self.get_recent_list()
 
@@ -230,6 +238,8 @@ class QQClient():
             # save all cookies
             f.write('{"cookies":')
             json.dump(self.http_client.get_cookies(), f)
+            # save username
+            f.write(',\n"username":"%s"' % self.username)
             # save user friends, groups and discus groups
             f.write(',\n"friends":')
             json.dump(self.friend_list.f, f)
@@ -242,11 +252,13 @@ class QQClient():
         return filename
 
     def load_veri(self, filename):
+        tag = 'verify'
         with open(filename, 'r') as f:
             v = json.load(f)
         for domain, cookies in v['cookies'].items():
             for name, value in cookies.items():
                 self.http_client.set_cookie(name, value, domain)
+        self.username = v['username']
         # TODO deal with the int-key conversion issues
         self.friend_list.f = {
             int(id): value for id, value in v['friends'].items()}
@@ -254,6 +266,8 @@ class QQClient():
             int(id): value for id, value in v['groups'].items()}
         self.friend_list.d = {
             int(id): value for id, value in v['discus_groups'].items()}
+        log.i(tag, 'Verification loaded from ' + filename)
+        log.i(tag, 'Username: ' + self.username)
 
     def listen(self, join=False):
         url_poll2 = 'http://d1.web2.qq.com/channel/poll2'
@@ -262,6 +276,7 @@ class QQClient():
             "psessionid": self.psessionid, "key": ""})}
 
         def l():
+            log.i('listener', 'Listener thread started.')
             while True:
                 r = self.http_client.req(
                     url_poll2, data=d, headers=self.poll_headers)
@@ -271,7 +286,6 @@ class QQClient():
 
         t = threading.Thread(name='qq_client_listener', target=l)
         t.start()
-        log.i('listener', 'Listener thread started.')
         if join:
             t.join()
 
