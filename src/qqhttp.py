@@ -1,4 +1,5 @@
 import json
+import traceback
 from multiprocessing.dummy import Pool
 from urllib import request, parse
 from http.cookiejar import Cookie, MozillaCookieJar
@@ -73,8 +74,9 @@ class mHTTPClient_urllib(mHTTPClient):
             f = self.opener.open(r)
             return f.read()
         except Exception:
-            log.w('http', 'HTTP error: errNo. ' + f.code)
-            log.w('http', 'url: ' + url)
+            log.w('http', 'HTTP error @ ' + url)
+            traceback.print_exc()
+
 
     def req_async(self, url, *, data=None, headers={}, cb=None):
         if cb is None:

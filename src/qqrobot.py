@@ -1,8 +1,9 @@
 import time
-import os
 import json
 import threading
 import traceback
+from os import system as exec_cmd
+from platform import system as get_sys_name
 
 from qqfriends import QQFriends
 from qqhttp import mHTTPClient_urllib
@@ -95,7 +96,7 @@ class QQClient():
         return list(map(lambda x: x.strip().strip("'"), js_str.split(',')))
 
     def get_qq_hash(self):
-        # rewrite from an javascript function
+        # rewritten from an javascript function
         # see mq_private.js for original version
         if not hasattr(self, '_qhash'):
             x = int(self.uin)
@@ -142,13 +143,17 @@ class QQClient():
 
         # get QR image
         if show_QR is None:
-            log.w(tag, ("showQR method is not specified, will use default "
-                "which is only runs in Mac OSX."))
-            # Mac OSX
-            def s():
-                os.system('open ' +
-                          self.http_client.get_image(url_get_QR_image))
-            show_QR = s
+            def e():
+                f = self.http_client.get_image(url_get_QR_image)
+                s = get_sys_name()
+                if s == 'Darwin': # Mac OSX
+                    exec_cmd('open ' + f)
+                elif s == 'Windows': # Windows
+                    exec_cmd(f)
+                else: # Linux or whatever(GUI availability unknown)
+                    pass
+                log.i(tag, 'QR Image saved @ ' + f)
+            show_QR = e
         show_QR()
 
         # check QR verification state
@@ -351,7 +356,7 @@ class QQClient():
         else:
             url_get_user_info = (
                 'http://s.web2.qq.com/api/get_friend_info2?'
-                'tuin={}&vfwebqq={}&t={}})').format(
+                'tuin={}&vfwebqq={}&t={})').format(
                 uin, self.vfwebqq, utime())
             j = self.http_client.get_json(
                 url_get_user_info, headers=self.default_headers)
@@ -365,8 +370,9 @@ class QQClient():
         else:
             url_get_group_info = (
                 'http://s.web2.qq.com/api/get_group_info_ext2?'
-                'gcode={}&vfwebqq={}&t={}}').format(
-                gid, self.vfwebqq, utime())
+                'gcode={}&vfwebqq={}&t={}').format(
+                self.friend_list.g[gid]['code'], self.vfwebqq, utime())
+            print(url_get_group_info)
             j = self.http_client.get_json(
                 url_get_group_info, headers=self.default_headers)
             return self.friend_list.parse_group_info(j)

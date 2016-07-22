@@ -5,7 +5,7 @@
       {
         "client_type": 1,
         "uin": 123456789, //user uin
-        "stat": 10 //or 30
+        "stat": 10 //what is this?
       },
       // and more info like that....
     ],
@@ -34,7 +34,7 @@
       "owner": 123456789,
       "members": [
         {
-          "muin": 123456789, //don't think too much, it's the uin exactly
+          "muin": 123456789, //don't think too much, it's exactly the uin
           "mflag": 0
         },
         // and more info like that...

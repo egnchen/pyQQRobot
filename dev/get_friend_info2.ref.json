@@ -1,0 +1,30 @@
+{
+  "retcode": 0,
+  "result": {
+    "face": 123, //face no.
+    "birthday": {
+      "month": 1,
+      "year": 2000,
+      "day": 1
+    },
+    "occupation": "",
+    "phone": "",
+    "allow": 1,
+    "college": "",
+    "uin": 123456789,
+    "constel": 12,
+    "blood": 0,
+    "homepage": "",
+    "stat": 20,
+    "vip_info": 0,
+    "country": "user_country",
+    "city": "user_city",
+    "personal": "",
+    "nick": "user_nickname",
+    "shengxiao": 1,
+    "email": "user_email",
+    "province": "user_province",
+    "gender": "user_gender",
+    "mobile": "user_mobile_number"
+  }
+}

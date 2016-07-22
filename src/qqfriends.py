@@ -62,18 +62,28 @@ class QQFriends():
         return self.group_info.get(gid)
 
     def parse_group_info(self, j):
-        j = j['result']['group_info']
-        g = j['gid']
-        del(j['gid'])
-        self.group_info[g] = j
-        return j
+        j = j['result']
+        g = j['ginfo']
+        g['members'] = {m['muin']: {} for m in g['members']} # ignore mflags
+        for m in j['stats']:
+            g['members'][m['uin']].update(m)
+        for m in j['minfo']:
+            g['members'][m['uin']].update(m)
+        for m in j['cards']:
+            g['members'][m['muin']].update(m)
+        for m in j['vipinfo']:
+            g['members'][m['u']]['vip_level'] = (
+                m['is_vip'] and m['vip_level'])
+        for m in g['members'].values():
+            m.pop('uin', None)
+            m.pop('muin', None)
+            m.pop('u', None)
+        self.group_info[g['gid']] = g
+        return g
 
     def get_user_info(self, uin):
         return self.user_info.get(uin)
 
     def parse_user_info(self, j):
-        j = j['result']
-        u = j['uin']
-        del(j['uin'])
-        self.user_info[u] = j
-        return j
+        self.user_info[j['result']['uin']] = j['result']
+        return j['result']
