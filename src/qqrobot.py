@@ -125,13 +125,6 @@ class QQClient():
             self._qhash = V
         return self._qhash
 
-    # def saveVeri(self, filename = None):
-    #     if filename =  = None:
-    #         filename = self.uin+'.veri'
-
-    # def loadVeri(self, filename):
-    #     self.http_client.loadCookie(filename)
-
     def QR_veri(self, show_QR=None):
         tag = 'verify'
         # --------------necessary urls--------------
@@ -350,7 +343,6 @@ class QQClient():
                 log.e('info', 'User self info fetching failed.')
         return self.info
         
-
     def get_user_info(self, uin):
         # method is GET
         r = self.friend_list.get_user_info(uin)
@@ -380,7 +372,7 @@ class QQClient():
             return self.friend_list.parse_group_info(j)
 
     def send_buddy_message(self, uin, content,
-                           font="宋体", size=10, color='000000'):
+        font="宋体", size=10, color='000000'):
         self.msg_id += 1
         c = json.dumps([
             content, ["font",
@@ -397,7 +389,7 @@ class QQClient():
             cb=self._callback_send)
 
     def send_group_message(self, gid, content,
-                           font="宋体", size=10, color='000000'):
+        font="宋体", size=10, color='000000'):
         self.msg_id += 1
         c = json.dumps([
             content, ["font",
@@ -419,8 +411,6 @@ class QQClient():
 
 
 class QQHandler(object):
-    _alloc = ('get_user_info', 'get_user_info', 'get_group_info',
-              'send_buddy_message', 'send_group_message')
 
     def __init__(self):
         self._qq_client = None
@@ -431,7 +421,7 @@ class QQHandler(object):
         self._qq_client = c
 
     def __getattr__(self, name):
-        if name in self._alloc:
+        if hasattr(self._qq_client, name):
             return self._qq_client.__getattribute__(name)
 
     def on_fail(self, resp, previous):

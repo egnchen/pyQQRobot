@@ -1,0 +1,60 @@
+{
+  "retcode": 0,
+  "result": {
+    "stats": [
+      {
+        "client_type": 1,
+        "uin": 123456789, //user uin
+        "stat": 10 //or 30
+      },
+      // and more info like that....
+    ],
+    "minfo": [
+      {
+        "nick": "user_nickname",
+        "province": "user_province",
+        "gender": "user_gender",
+        "uin": 1234567890, //user uin
+        "country": "user_country",
+        "city": "user_city"
+      },
+      // and more info like that...
+    ],
+    "ginfo": {
+      "face": 0,
+      "memo": "group_introduction",
+      "class": 25, //group class
+      "fingermemo": "",
+      "code": 123456789, //group code?
+      "createtime": 100000000, //create time in unix time stamp format
+      "flag": 123456789, //what is that all about?
+      "level": 0, //group level
+      "name": "group_name",
+      "gid": 123456789,
+      "owner": 123456789,
+      "members": [
+        {
+          "muin": 123456789, //don't think too much, it's the uin exactly
+          "mflag": 0
+        },
+        // and more info like that...
+      ],
+      "option": 2 //what is that all about?
+    },
+    "cards": [
+      {
+        "muin": 123456789,
+        "card": "my_namecard_in_this_group"
+      },
+      // and more info like that...
+    ],
+    "vipinfo": [
+      {
+        "vip_level": 7,
+        "u": 123456789,
+        "is_vip": 1 //which means this guy is vip
+      },
+      // and more info like that....
+    ]
+  }
+}

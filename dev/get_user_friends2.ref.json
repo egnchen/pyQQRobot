@@ -1,0 +1,45 @@
+{
+  "retcode": 0,
+  "result": {
+    "friends": [
+      {
+        "flag": 8, //don't know what that means
+        "uin": 123456789,
+        "categories": 1 //category number in **index**
+      },
+      // and more info like that...
+    ],
+    "marknames": [
+      {
+        "uin": 123456789,
+        "markname": "user_markname",
+        "type": 0 //always zero
+      },
+    ],
+    "categories": [
+      {
+        "index": 1, //which goes in turn...
+        "sort": 1, //sorted order...
+        "name": "category_name"
+      },
+      // and more info like that...
+    ],
+    "vipinfo": [
+      {
+        "vip_level": 0, //no vip level
+        "u": 123456789,
+        "is_vip": 0 //which means this guy isn't vip
+      },
+      // and more info like that...
+    ],
+    "info": [
+      {
+        "face": 201, //what is that all about?
+        "flag": 294126144, //what is that all about?
+        "nick": "user_nickname",
+        "uin": 123456789
+      },
+      // and more info like that...
+    ]
+  }
+}
