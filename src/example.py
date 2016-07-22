@@ -41,7 +41,7 @@ if __name__ == "__main__":
     a.save_veri()  # default filename will be ./`QQClient.uin`.veri
 
     # or load from a file instead
-    # a.load_veri('path/to/your/verification/file')
+    # a.load_veri('/path/to/your/verification')
     # a.login(get_info=False)
 
     a.add_handler(h)
