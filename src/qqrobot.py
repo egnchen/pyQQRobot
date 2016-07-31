@@ -6,7 +6,7 @@ from os import system as exec_cmd
 from platform import system as get_sys_name
 
 from qqfriends import QQFriends
-from qqhttp import mHTTPClient_urllib
+from qqhttp_gevent import mHTTPClient_gevent
 import mlogger as log
 
 
@@ -33,7 +33,7 @@ class QQClient():
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/'
             '537.36 (KHTML, like Gecko) Chrome/50.0.2661.86 Safari/537.36'))
 
-    def __init__(self, HTTPClient=mHTTPClient_urllib, handlers=[]):
+    def __init__(self, HTTPClient=mHTTPClient_gevent, handlers=[]):
         self.friend_list = QQFriends()
         self.http_client = HTTPClient()
         self.msg_id = 50500000
