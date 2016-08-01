@@ -62,7 +62,7 @@ Here's a brief list of the files included:
     * **QQClient** A set of WebQQ APIs and the core runtime of pyQQRobot.
     * **QQHandler** The simple plugin framework.
 * **qqfriends.py** The QQ friends, groups and discus groups data parser.
-* **qqhttp.py** Simple HTTP Client.
+* **qqhttp.py** Simple HTTP Client. See also **qqhttp_gevent.py**, one uses gevent.
 * **mlogger.py** Simple screen logger.
 
 ## Disclaimer
