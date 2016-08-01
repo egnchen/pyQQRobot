@@ -70,6 +70,7 @@ As a **Senior Three student in China** there just cannot be enough time for me t
 
 ## so, what TODO next?
 Well, no maintainance guaranteed. Maybe I'll turn a blind eye to issues and PRs. But if you insist, just send one.
+
 1. **`QQClient` itself is a little messy.** To solve this, I think `qqhttp` should be dumped, and take a normal way to do it - like using `requests` library instead. Concurrency and asynchrization can be implemented with `gevent` or other libraries.
 2. **Sending messages to discus groups.** Technically not difficult.
 3. **Finding friends.** I was suprised to find out that there's no standard way to determine a specified user by account num(QQ号) in WebQQ protocol. Sure there's way to do it(I already have something in mind).
