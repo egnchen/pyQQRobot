@@ -411,6 +411,24 @@ class QQClient():
             headers=self.poll_headers,
             cb=self._callback_send)
 
+    def get_real_uin(self, tuin):
+        """Get user's real uin by tuin
+        WebQQ protocol itself uses `tuin` which is not the original uin,
+        getting the real uin requires an API request, which is exactly
+        what this method does.
+        Returns user's real uin.
+        Client.get_real_uin(tuin) -> int
+        """
+        # method is GET
+        j = self.http_client.get_json((
+            'http://s.web2.qq.com/api/get_friend_uin2?tuin={}&type=1&'
+            'vfwebqq={}&t={}').format(tuin, self.vfwebqq, utime()),
+            headers = self.default_headers)
+        if j['retcode'] != 0:
+            raise RuntimeError('get_real_uin failed: illegal arguments.')
+        else:
+            return j['result']['account']
+        
     def add_handler(self, handler):
         handler.set_qq_client(self)
         self.handlers.append(handler)
@@ -438,4 +456,3 @@ class QQHandler(object):
 
     def on_group_message(self, gid, uin, msg):
         pass
-
