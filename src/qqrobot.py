@@ -356,8 +356,8 @@ class QQClient():
         else:
             url_get_user_info = (
                 'http://s.web2.qq.com/api/get_friend_info2?'
-                'tuin={}&vfwebqq={}&t={})').format(
-                uin, self.vfwebqq, utime())
+                'tuin={}&vfwebqq={}&clientid=53999199&psessionid={}&'
+                't={}').format(uin, self.vfwebqq, self.psessionid, utime())
             j = self.http_client.get_json(
                 url_get_user_info, headers=self.default_headers)
             return self.friend_list.parse_user_info(j)
