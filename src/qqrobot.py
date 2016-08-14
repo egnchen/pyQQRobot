@@ -341,7 +341,7 @@ class QQClient():
         if not hasattr(self, 'info'):
             r = self.http_client.get_json(
                 'http://s.web2.qq.com/api/get_self_info2?t' + str(utime()),
-                headers=self.default_header)
+                headers=self.default_headers)
             if r['retcode'] == 0:
                 self.info = r['result']
             else:
