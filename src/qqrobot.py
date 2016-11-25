@@ -379,6 +379,8 @@ class QQClient():
 
     def send_buddy_message(self, uin, content,
         font="宋体", size=10, color='000000'):
+        content = content.replace('<', '＜')
+        content = content.replace('>', '＞')
         self.msg_id += 1
         c = json.dumps([
             content, ["font",
@@ -396,6 +398,8 @@ class QQClient():
 
     def send_group_message(self, gid, content,
         font="宋体", size=10, color='000000'):
+        content = content.replace('<', '＜')
+        content = content.replace('>', '＞')
         self.msg_id += 1
         c = json.dumps([
             content, ["font",
