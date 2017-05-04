@@ -44,14 +44,14 @@ if __name__ == '__main__':
     client.listen()
 ```
 
-You can refer to `src/example.py` for another example, using some sort of intelligent robot to respond to messages.
+You can refer to `src/example.py` for another example, using some sort of intelligent robot to make responses to messages.
 
 ## Functions
 Now you can:
 
-* send messages to your buddies and group
-* set listeners to messages from your buddies and group
-* get information about yourself, your buddies and group
+* send messages to your buddies and groups
+* set listeners to messages from your buddies and groups
+* get information about yourself, your buddies and groups
 
 Discuss groups aren't supported.
 
@@ -69,8 +69,8 @@ Here's a brief list of the files included:
 As a **Senior Three student in China** there just cannot be enough time for me to maintain the project. I sincerely hope that there'll be coders interested to help.
 
 ## so, what TODO next?
-Well, no maintainance guaranteed. Maybe I'll turn a blind eye to issues and PRs. But if you insist, just send one.
+Well, no maintainance guaranteed. Maybe I'll turn a blind eye to issues and PRs, but if you insist, just send one.
 
-1. **`QQClient` itself is a little messy.** To solve this, I think `qqhttp` should be dumped, and take a normal way to do it - like using `requests` library instead. Concurrency and asynchrization can be implemented with `gevent` or other libraries.
+1. **`QQClient` itself is a little messy.** To solve this, I think `qqhttp` should be dumped, and take a ordinary way - like `requests`. Concurrency and asynchronization can be implemented with `gevent` or other libraries.
 2. **Sending messages to discus groups.** Technically not difficult.
-3. **Finding friends.** I was suprised to find out that there's no standard way to determine a specified user by account num(QQ号) in WebQQ protocol. Sure there's way to do it(I already have something in mind).
+3. **Finding friends.** Until now I still couldn't find an existing interface in WebQQ protocol to determine a specified user by his/her account number(QQ号). Sure there's way to do it(I already have something in mind).
