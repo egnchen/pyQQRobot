@@ -1,4 +1,6 @@
-# pyQQRobot
+# pyQQRobot\[discontinued\]
+**Project discontinued due to abolishment of WebQQ service.**
+
 基于Python3与WebQQ的QQ机器人框架。
 
 A QQ Robot framework based on WebQQ and Python3.
